@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Daily Witness</title>
+  <style>
+    :root{
+      --bg: #f7f4ee;
+      --ink: #1e1e1e;
+      --muted: #6b6b6b;
+      --faint: rgba(0,0,0,.12);
+      --panel: rgba(255,255,255,.55);
+      --shadow: rgba(0,0,0,.08);
+      --focus: rgba(0,0,0,.18);
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 700px at 20% 0%, rgba(0,0,0,.05), transparent 55%),
+                  radial-gradient(900px 600px at 80% 10%, rgba(0,0,0,.04), transparent 60%),
+                  var(--bg);
+      color: var(--ink);
+      letter-spacing: 0.1px;
+    }
+    .wrap{
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 22px 18px 28px;
+    }
+
+    /* Header */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .dayline{
+      font-size: 15px;
+      color: var(--muted);
+      user-select:none;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .dayline button{
+      all: unset;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 10px;
+      color: var(--muted);
+    }
+    .dayline button:focus-visible{
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .corner{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .iconbtn{
+      all: unset;
+      cursor:pointer;
+      padding: 8px 10px;
+      border-radius: 12px;
+      color: var(--muted);
+      background: transparent;
+      user-select:none;
+    }
+    .iconbtn:hover{ background: rgba(0,0,0,.04); }
+    .iconbtn:focus-visible{
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* List */
+    .list{
+      background: var(--panel);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 18px;
+      padding: 10px;
+      box-shadow: 0 10px 30px var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+    .item{
+      display:flex;
+      gap: 12px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .item:hover{ background: rgba(0,0,0,.03); }
+    .item:focus-visible{
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .dot{
+      width: 22px; height: 22px;
+      border-radius: 999px;
+      border: 1.6px solid rgba(0,0,0,.35);
+      margin-top: 2px;
+      flex: 0 0 auto;
+      position: relative;
+    }
+    .dot.checked::after{
+      content:"";
+      position:absolute;
+      inset: 4px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.74);
+    }
+    .content{
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .title{
+      font-size: 16px;
+      line-height: 1.2;
+      margin: 0 0 4px 0;
+      display:flex;
+      align-items:baseline;
+      gap: 10px;
+    }
+    .title strong{
+      font-weight: 600;
+    }
+    .hint{
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--muted);
+      margin: 0;
+    }
+    .divider{
+      height: 1px;
+      background: rgba(0,0,0,.06);
+      margin: 0 12px;
+    }
+
+    /* Subtle time emphasis */
+    .emphasis .title strong{
+      color: var(--ink);
+    }
+    .emphasis{
+      background: rgba(0,0,0,.035);
+    }
+
+    /* Footer */
+    .footer{
+      margin-top: 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .footer a{
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(0,0,0,.18);
+    }
+    .footer a:hover{
+      border-bottom-color: rgba(0,0,0,.35);
+    }
+
+    /* Modal */
+    dialog{
+      border: none;
+      padding: 0;
+      border-radius: 18px;
+      width: min(860px, calc(100vw - 24px));
+      box-shadow: 0 25px 60px rgba(0,0,0,.25);
+      background: rgba(250, 248, 242, .96);
+      color: var(--ink);
+    }
+    dialog::backdrop{
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(3px);
+    }
+    .modal{
+      padding: 16px 16px 14px;
+    }
+    .modalhead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .modalhead h2{
+      margin:0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .modalhead p{
+      margin: 4px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 60ch;
+    }
+    .closebtn{
+      all: unset;
+      cursor:pointer;
+      padding: 8px 10px;
+      border-radius: 12px;
+      color: var(--muted);
+    }
+    .closebtn:hover{ background: rgba(0,0,0,.05); }
+    .closebtn:focus-visible{
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Hidden rhythm grid */
+    .rhythm{
+      overflow:auto;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.45);
+    }
+    .rhythmInner{
+      min-width: 720px;
+      padding: 12px 12px 10px;
+    }
+    .rhythmHeader{
+      display:grid;
+      grid-template-columns: 120px repeat(7, 1fr);
+      gap: 8px;
+      align-items:end;
+      padding: 0 0 8px 0;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+      margin-bottom: 8px;
+    }
+    .rhythmHeader .col{
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.1;
+      padding: 0 2px;
+    }
+    .rhythmRows{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 120px repeat(7, 1fr);
+      gap: 8px;
+      align-items:center;
+      padding: 4px 0;
+      border-radius: 10px;
+    }
+    .row:hover{
+      background: rgba(0,0,0,.03);
+    }
+    .datecell{
+      font-size: 12px;
+      color: var(--muted);
+      padding-left: 2px;
+      white-space:nowrap;
+    }
+    .cell{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height: 18px;
+    }
+    .rdot{
+      width: 8px; height: 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.14);
+    }
+    .rdot.on{
+      background: rgba(0,0,0,.72);
+    }
+    .modalfoot{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .pill{
+      display:inline-flex;
+      gap: 8px;
+      align-items:center;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.35);
+    }
+    .smallbtn{
+      all: unset;
+      cursor:pointer;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.35);
+      color: var(--muted);
+    }
+    .smallbtn:hover{ background: rgba(255,255,255,.55); }
+    .smallbtn:focus-visible{
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+    input[type="file"]{ display:none; }
+
+    /* Mobile spacing */
+    @media (max-width: 480px){
+      .wrap{ padding: 18px 14px 24px; }
+      .title{ font-size: 15px; }
+      .hint{ font-size: 12.5px; }
+      .rhythmHeader{ grid-template-columns: 96px repeat(7, 1fr); }
+      .row{ grid-template-columns: 96px repeat(7, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="dayline">
+        <button id="dateBtn" title="Choose date" aria-label="Choose date">
+          <span id="dateLabel">—</span>
+        </button>
+        <input id="datePicker" type="date" />
+      </div>
+      <div class="corner">
+        <button class="iconbtn" id="historyBtn" title="History" aria-label="Open history">···</button>
+      </div>
+    </div>
+
+    <div class="list" id="list" aria-label="Daily items"></div>
+
+    <div class="footer">
+      <span id="status">Saved locally.</span>
+      <span><a href="#" id="exportBtn">Export</a> · <a href="#" id="importBtn">Import</a></span>
+      <input id="importFile" type="file" accept="application/json" />
+    </div>
+  </div>
+
+  <dialog id="historyModal">
+    <div class="modal">
+      <div class="modalhead">
+        <div>
+          <h2>Hidden rhythm</h2>
+          <p>Patterns over time. No scores, no totals—just presence.</p>
+        </div>
+        <button class="closebtn" id="closeHistory" aria-label="Close">✕</button>
+      </div>
+
+      <div class="rhythm">
+        <div class="rhythmInner">
+          <div class="rhythmHeader" id="rhythmHeader"></div>
+          <div class="rhythmRows" id="rhythmRows"></div>
+        </div>
+      </div>
+
+      <div class="modalfoot">
+        <div class="pill">
+          <span>Range:</span>
+          <select id="rangeSelect">
+            <option value="14">14 days</option>
+            <option value="30" selected>30 days</option>
+            <option value="90">90 days</option>
+            <option value="365">365 days</option>
+          </select>
+        </div>
+        <div class="pill">
+          <button class="smallbtn" id="jumpToday">Go to today</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    /**********************
+     * Daily Witness v0.1 *
+     **********************/
+
+    const ITEMS = [
+      {
+        key: "morning_prayer",
+        label: "Morning Prayer",
+        hint: "A moment of orientation at the beginning of the day. Words, silence, or intention are enough."
+      },
+      {
+        key: "scripture",
+        label: "Scripture",
+        hint: "Reading or listening to a sacred text, even briefly. Understanding is not required."
+      },
+      {
+        key: "silence",
+        label: "Silence",
+        hint: "Time set aside without words, requests, or reflection. Simply remaining."
+      },
+      {
+        key: "thanksgiving",
+        label: "Thanksgiving",
+        hint: "An explicit act of gratitude, however small. Even in difficulty."
+      },
+      {
+        key: "charity",
+        label: "Charity",
+        hint: "A conscious act of attention, restraint, or generosity toward another. Often unnoticed."
+      },
+      {
+        key: "evening_prayer",
+        label: "Evening Prayer",
+        hint: "A return at the end of the day. Completion is not required."
+      },
+      {
+        key: "recollection",
+        label: "Recollection / Examination",
+        hint: "Looking back on the day with honesty, without judgment. Not to fix, but to see."
+      }
+    ];
+
+    const STORAGE_KEY = "daily_witness_v01";
+
+    // Elements
+    const listEl = document.getElementById("list");
+    const dateLabel = document.getElementById("dateLabel");
+    const dateBtn = document.getElementById("dateBtn");
+    const datePicker = document.getElementById("datePicker");
+    const statusEl = document.getElementById("status");
+
+    const historyBtn = document.getElementById("historyBtn");
+    const historyModal = document.getElementById("historyModal");
+    const closeHistory = document.getElementById("closeHistory");
+    const rhythmHeader = document.getElementById("rhythmHeader");
+    const rhythmRows = document.getElementById("rhythmRows");
+    const rangeSelect = document.getElementById("rangeSelect");
+    const jumpToday = document.getElementById("jumpToday");
+
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+    const importFile = document.getElementById("importFile");
+
+    // State
+    let db = loadDB();
+    let selectedDate = todayISO();
+
+    // Init
+    renderDay();
+    wireEvents();
+
+    function wireEvents(){
+      dateBtn.addEventListener("click", () => {
+        datePicker.value = selectedDate;
+        datePicker.showPicker?.(); // supported in many browsers
+        datePicker.focus();
+      });
+
+      datePicker.addEventListener("change", () => {
+        if (!datePicker.value) return;
+        selectedDate = datePicker.value;
+        renderDay();
+      });
+
+      historyBtn.addEventListener("click", () => {
+        renderHistory();
+        historyModal.showModal();
+      });
+
+      closeHistory.addEventListener("click", () => historyModal.close());
+      historyModal.addEventListener("click", (e) => {
+        // click outside closes
+        const rect = historyModal.getBoundingClientRect();
+        const inDialog = (
+          e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top && e.clientY <= rect.bottom
+        );
+        if (!inDialog) historyModal.close();
+      });
+
+      rangeSelect.addEventListener("change", () => renderHistory());
+
+      jumpToday.addEventListener("click", () => {
+        selectedDate = todayISO();
+        renderDay();
+        renderHistory();
+      });
+
+      exportBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        exportJSON();
+      });
+
+      importBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        importFile.click();
+      });
+
+      importFile.addEventListener("change", async () => {
+        const file = importFile.files?.[0];
+        if (!file) return;
+        try{
+          const text = await file.text();
+          const incoming = JSON.parse(text);
+          if (!incoming || typeof incoming !== "object") throw new Error("Invalid file");
+          // Merge: incoming wins for same date keys
+          db = { ...db, ...incoming };
+          saveDB(db);
+          status("Imported.");
+          renderDay();
+        }catch(err){
+          status("Import failed.");
+          console.error(err);
+        }finally{
+          importFile.value = "";
+        }
+      });
+
+      // Refresh subtle time emphasis every minute
+      setInterval(() => {
+        applyTimeEmphasis();
+      }, 60_000);
+    }
+
+    function renderDay(){
+      // Header label
+      dateLabel.textContent = prettyDate(selectedDate);
+
+      // Ensure day record exists (but don't write unless needed)
+      const rec = getRecord(selectedDate);
+
+      // Build list
+      listEl.innerHTML = "";
+      ITEMS.forEach((it, idx) => {
+        const row = document.createElement("div");
+        row.className = "item";
+        row.tabIndex = 0;
+        row.setAttribute("role","button");
+        row.setAttribute("aria-pressed", String(!!rec[it.key]));
+
+        const dot = document.createElement("div");
+        dot.className = "dot" + (rec[it.key] ? " checked" : "");
+        dot.setAttribute("aria-hidden","true");
+
+        const content = document.createElement("div");
+        content.className = "content";
+
+        const title = document.createElement("p");
+        title.className = "title";
+        title.innerHTML = `<strong>${escapeHtml(it.label)}</strong>`;
+
+        const hint = document.createElement("p");
+        hint.className = "hint";
+        hint.textContent = it.hint;
+
+        content.appendChild(title);
+        content.appendChild(hint);
+
+        row.appendChild(dot);
+        row.appendChild(content);
+
+        row.addEventListener("click", () => toggle(it.key));
+        row.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggle(it.key);
+          }
+        });
+
+        listEl.appendChild(row);
+
+        if (idx < ITEMS.length - 1){
+          const div = document.createElement("div");
+          div.className = "divider";
+          listEl.appendChild(div);
+        }
+      });
+
+      applyTimeEmphasis();
+      status("Saved locally.");
+    }
+
+    function applyTimeEmphasis(){
+      // Soft emphasis only on the selected day if it is today
+      const isToday = (selectedDate === todayISO());
+      const rows = Array.from(listEl.querySelectorAll(".item"));
+      rows.forEach(r => r.classList.remove("emphasis"));
+
+      if (!isToday) return;
+
+      const now = new Date();
+      const hour = now.getHours();
+
+      // Morning emphasis before 12
+      if (hour < 12) {
+        emphasizeKey("morning_prayer");
+      }
+      // Evening emphasis after ~17:00 (simple; no sunset calc)
+      if (hour >= 17) {
+        emphasizeKey("evening_prayer");
+        emphasizeKey("recollection");
+      }
+    }
+
+    function emphasizeKey(key){
+      const idx = ITEMS.findIndex(x => x.key === key);
+      if (idx < 0) return;
+      // rows includes dividers; compute item index
+      const itemRows = Array.from(listEl.querySelectorAll(".item"));
+      const row = itemRows[idx];
+      if (row) row.classList.add("emphasis");
+    }
+
+    function toggle(key){
+      const rec = getRecord(selectedDate);
+      rec[key] = !rec[key];
+      setRecord(selectedDate, rec);
+      saveDB(db);
+      renderDay(); // simple rerender (still fast)
+    }
+
+    function getRecord(dateISO){
+      if (!db[dateISO]) {
+        db[dateISO] = {};
+      }
+      return db[dateISO];
+    }
+
+    function setRecord(dateISO, rec){
+      db[dateISO] = rec;
+    }
+
+    function loadDB(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return (parsed && typeof parsed === "object") ? parsed : {};
+      }catch{
+        return {};
+      }
+    }
+
+    function saveDB(obj){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    }
+
+    function status(msg){
+      statusEl.textContent = msg;
+      clearTimeout(statusEl._t);
+      statusEl._t = setTimeout(() => {
+        statusEl.textContent = "Saved locally.";
+      }, 1600);
+    }
+
+    function todayISO(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function prettyDate(iso){
+      const d = new Date(iso + "T00:00:00");
+      const weekday = d.toLocaleDateString(undefined, { weekday: "long" });
+      const month = d.toLocaleDateString(undefined, { month: "short" });
+      const day = d.toLocaleDateString(undefined, { day: "2-digit" });
+      const year = d.toLocaleDateString(undefined, { year: "numeric" });
+      return `${weekday} · ${month} ${day}, ${year}`;
+    }
+
+    function renderHistory(){
+      // Header columns
+      rhythmHeader.innerHTML = "";
+      const first = document.createElement("div");
+      first.className = "col";
+      first.textContent = "Date";
+      rhythmHeader.appendChild(first);
+
+      ITEMS.forEach(it => {
+        const c = document.createElement("div");
+        c.className = "col";
+        c.textContent = it.label;
+        rhythmHeader.appendChild(c);
+      });
+
+      const days = parseInt(rangeSelect.value, 10);
+      const end = new Date(selectedDate + "T00:00:00");
+      const start = new Date(end);
+      start.setDate(end.getDate() - (days - 1));
+
+      rhythmRows.innerHTML = "";
+      for (let i = 0; i < days; i++){
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const iso = toISODate(d);
+
+        const row = document.createElement("div");
+        row.className = "row";
+        row.title = "Click to open this day";
+        row.addEventListener("click", () => {
+          selectedDate = iso;
+          renderDay();
+          // keep modal open; re-render so highlight follows selection
+          renderHistory();
+        });
+
+        const dateCell = document.createElement("div");
+        dateCell.className = "datecell";
+        dateCell.textContent = shortDate(iso);
+        row.appendChild(dateCell);
+
+        const rec = db[iso] || {};
+        ITEMS.forEach(it => {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          const dot = document.createElement("div");
+          dot.className = "rdot" + (rec[it.key] ? " on" : "");
+          cell.appendChild(dot);
+          row.appendChild(cell);
+        });
+
+        // Subtle emphasis for selected day row
+        if (iso === selectedDate){
+          row.style.background = "rgba(0,0,0,.04)";
+        }
+
+        rhythmRows.appendChild(row);
+      }
+    }
+
+    function toISODate(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function shortDate(iso){
+      const d = new Date(iso + "T00:00:00");
+      const month = d.toLocaleDateString(undefined, { month: "short" });
+      const day = d.toLocaleDateString(undefined, { day: "2-digit" });
+      const weekday = d.toLocaleDateString(undefined, { weekday: "short" });
+      return `${weekday} ${month} ${day}`;
+    }
+
+    function exportJSON(){
+      const payload = JSON.stringify(db, null, 2);
+      const blob = new Blob([payload], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "daily-witness.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      status("Exported.");
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+  </script>
+</body>
+</html>
