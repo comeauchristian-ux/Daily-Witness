@@ -6,24 +6,90 @@
   <title>Daily Witness</title>
   <style>
     :root{
-      --bg: #f7f4ee;
-      --ink: #1e1e1e;
-      --muted: #6b6b6b;
-      --faint: rgba(0,0,0,.12);
-      --panel: rgba(255,255,255,.55);
-      --shadow: rgba(0,0,0,.08);
-      --focus: rgba(0,0,0,.18);
+      --bg: #f5f0e6;
+      --panel: rgba(255,255,255,.62);
+      --modal: rgba(250, 248, 242, .96);
+      --ink: #24201c;
+      --muted: #6d6257;
+      --faint: rgba(36,32,28,.08);
+      --line: rgba(36,32,28,.12);
+      --dot-line: rgba(36,32,28,.38);
+      --dot-fill: rgba(36,32,28,.78);
+      --shadow: rgba(36,32,28,.10);
+      --focus: rgba(36,32,28,.26);
+      --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+      --mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='180' viewBox='0 0 44 180'%3E%3Cg fill='none' stroke='black' stroke-opacity='0.5' stroke-width='1'%3E%3Ccircle cx='22' cy='14' r='4'/%3E%3Ccircle cx='22' cy='38' r='4'/%3E%3Ccircle cx='22' cy='62' r='4'/%3E%3Ccircle cx='22' cy='86' r='4'/%3E%3Ccircle cx='22' cy='110' r='4'/%3E%3Ccircle cx='22' cy='134' r='4'/%3E%3Ccircle cx='22' cy='158' r='4'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    body[data-theme="morning"]{
+      --bg: #f6f1e6;
+      --panel: rgba(255,255,255,.66);
+      --modal: rgba(250, 247, 240, .96);
+      --ink: #2a2520;
+      --muted: #72665c;
+      --faint: rgba(42,37,32,.07);
+      --line: rgba(42,37,32,.12);
+      --dot-line: rgba(42,37,32,.38);
+      --dot-fill: rgba(42,37,32,.78);
+      --shadow: rgba(42,37,32,.10);
+      --focus: rgba(42,37,32,.26);
+    }
+    body[data-theme="day"]{
+      --bg: #f5f0e6;
+      --panel: rgba(255,255,255,.62);
+      --modal: rgba(250, 248, 242, .96);
+      --ink: #24201c;
+      --muted: #6d6257;
+      --faint: rgba(36,32,28,.08);
+      --line: rgba(36,32,28,.12);
+      --dot-line: rgba(36,32,28,.38);
+      --dot-fill: rgba(36,32,28,.78);
+      --shadow: rgba(36,32,28,.10);
+      --focus: rgba(36,32,28,.26);
+    }
+    body[data-theme="evening"]{
+      --bg: #f1ece3;
+      --panel: rgba(252,249,242,.64);
+      --modal: rgba(248, 244, 236, .96);
+      --ink: #2b241f;
+      --muted: #75695f;
+      --faint: rgba(43,36,31,.08);
+      --line: rgba(43,36,31,.12);
+      --dot-line: rgba(43,36,31,.40);
+      --dot-fill: rgba(43,36,31,.78);
+      --shadow: rgba(43,36,31,.12);
+      --focus: rgba(43,36,31,.28);
+    }
+    body[data-theme="night"]{
+      --bg: #e7e2d8;
+      --panel: rgba(246,242,236,.60);
+      --modal: rgba(242, 238, 232, .96);
+      --ink: #241f1b;
+      --muted: #6f6258;
+      --faint: rgba(36,31,27,.08);
+      --line: rgba(36,31,27,.13);
+      --dot-line: rgba(36,31,27,.40);
+      --dot-fill: rgba(36,31,27,.80);
+      --shadow: rgba(36,31,27,.14);
+      --focus: rgba(36,31,27,.30);
     }
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      background: radial-gradient(1200px 700px at 20% 0%, rgba(0,0,0,.05), transparent 55%),
-                  radial-gradient(900px 600px at 80% 10%, rgba(0,0,0,.04), transparent 60%),
-                  var(--bg);
+      background: var(--bg);
       color: var(--ink);
       letter-spacing: 0.1px;
+      transition: background-color .25s ease, color .25s ease;
+    }
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      background-image: var(--paper-grain);
+      opacity: 0.035;
+      pointer-events: none;
+      mix-blend-mode: multiply;
     }
     .wrap{
       max-width: 720px;
@@ -77,15 +143,33 @@
       outline: 2px solid var(--focus);
       outline-offset: 2px;
     }
+    .iconbtn, .dayline button{
+      transition: background-color .25s ease, color .25s ease;
+    }
 
     /* List */
     .list{
       background: var(--panel);
-      border: 1px solid rgba(0,0,0,.06);
+      border: 1px solid var(--line);
       border-radius: 18px;
       padding: 10px;
       box-shadow: 0 10px 30px var(--shadow);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(4px);
+      position: relative;
+      overflow: hidden;
+      transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .list::before{
+      content:"";
+      position:absolute;
+      inset: 14px 18px 14px auto;
+      width: 44px;
+      height: 180px;
+      background-image: var(--mark);
+      background-repeat: no-repeat;
+      background-size: 44px 180px;
+      opacity: 0.08;
+      pointer-events:none;
     }
     .item{
       display:flex;
@@ -94,6 +178,7 @@
       border-radius: 14px;
       cursor:pointer;
       user-select:none;
+      transition: background-color .25s ease;
     }
     .item:hover{ background: rgba(0,0,0,.03); }
     .item:focus-visible{
@@ -103,7 +188,7 @@
     .dot{
       width: 22px; height: 22px;
       border-radius: 999px;
-      border: 1.6px solid rgba(0,0,0,.35);
+      border: 1.6px solid var(--dot-line);
       margin-top: 2px;
       flex: 0 0 auto;
       position: relative;
@@ -113,7 +198,7 @@
       position:absolute;
       inset: 4px;
       border-radius: 999px;
-      background: rgba(0,0,0,.74);
+      background: var(--dot-fill);
     }
     .content{
       flex: 1 1 auto;
@@ -138,7 +223,7 @@
     }
     .divider{
       height: 1px;
-      background: rgba(0,0,0,.06);
+      background: var(--line);
       margin: 0 12px;
     }
 
@@ -163,10 +248,11 @@
     .footer a{
       color: inherit;
       text-decoration: none;
-      border-bottom: 1px solid rgba(0,0,0,.18);
+      border-bottom: 1px solid var(--line);
+      transition: border-color .25s ease, color .25s ease;
     }
     .footer a:hover{
-      border-bottom-color: rgba(0,0,0,.35);
+      border-bottom-color: var(--dot-line);
     }
 
     /* Modal */
@@ -176,8 +262,9 @@
       border-radius: 18px;
       width: min(860px, calc(100vw - 24px));
       box-shadow: 0 25px 60px rgba(0,0,0,.25);
-      background: rgba(250, 248, 242, .96);
+      background: var(--modal);
       color: var(--ink);
+      transition: background-color .25s ease, color .25s ease;
     }
     dialog::backdrop{
       background: rgba(0,0,0,.35);
@@ -192,6 +279,20 @@
       justify-content:space-between;
       gap: 12px;
       margin-bottom: 10px;
+      position: relative;
+    }
+    .modalhead::before{
+      content:"";
+      position:absolute;
+      right: 6px;
+      top: -6px;
+      width: 44px;
+      height: 180px;
+      background-image: var(--mark);
+      background-repeat: no-repeat;
+      background-size: 44px 180px;
+      opacity: 0.09;
+      pointer-events:none;
     }
     .modalhead h2{
       margin:0;
@@ -222,8 +323,8 @@
     .rhythm{
       overflow:auto;
       border-radius: 14px;
-      border: 1px solid rgba(0,0,0,.08);
-      background: rgba(255,255,255,.45);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.38);
     }
     .rhythmInner{
       min-width: 720px;
@@ -235,7 +336,7 @@
       gap: 8px;
       align-items:end;
       padding: 0 0 8px 0;
-      border-bottom: 1px solid rgba(0,0,0,.08);
+      border-bottom: 1px solid var(--line);
       margin-bottom: 8px;
     }
     .rhythmHeader .col{
@@ -275,10 +376,10 @@
     .rdot{
       width: 8px; height: 8px;
       border-radius: 999px;
-      background: rgba(0,0,0,.14);
+      background: var(--faint);
     }
     .rdot.on{
-      background: rgba(0,0,0,.72);
+      background: var(--dot-fill);
     }
     .modalfoot{
       display:flex;
@@ -295,7 +396,7 @@
       align-items:center;
       padding: 8px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(0,0,0,.10);
+      border: 1px solid var(--line);
       background: rgba(255,255,255,.35);
     }
     .smallbtn{
@@ -303,7 +404,7 @@
       cursor:pointer;
       padding: 8px 10px;
       border-radius: 12px;
-      border: 1px solid rgba(0,0,0,.10);
+      border: 1px solid var(--line);
       background: rgba(255,255,255,.35);
       color: var(--muted);
     }
@@ -451,6 +552,7 @@
 
     // Init
     renderDay();
+    applyTimeTheme();
     wireEvents();
 
     function wireEvents(){
@@ -520,8 +622,9 @@
         }
       });
 
-      // Refresh subtle time emphasis every minute
+      // Refresh time-based theme and subtle emphasis every minute
       setInterval(() => {
+        applyTimeTheme();
         applyTimeEmphasis();
       }, 60_000);
     }
@@ -604,6 +707,16 @@
         emphasizeKey("evening_prayer");
         emphasizeKey("recollection");
       }
+    }
+
+    function applyTimeTheme(){
+      const hour = new Date().getHours();
+      let theme = "day";
+      if (hour >= 5 && hour < 11) theme = "morning";
+      else if (hour >= 11 && hour < 17) theme = "day";
+      else if (hour >= 17 && hour < 21) theme = "evening";
+      else theme = "night";
+      document.body.dataset.theme = theme;
     }
 
     function emphasizeKey(key){
