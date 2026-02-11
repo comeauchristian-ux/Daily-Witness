@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ALL_ITEM_IDS, ITEM_LABELS } from '../data';
+import { getDayAnchor, keyFromLocalDate } from '../storage';
 
 const RANGES = [14, 30, 90, 365];
 
@@ -18,13 +19,13 @@ function seededNoise(seed, min, max) {
 }
 
 function buildDays(limit, records) {
-  const today = new Date();
+  const todayAnchor = getDayAnchor(new Date());
   const days = [];
 
   for (let i = limit - 1; i >= 0; i -= 1) {
-    const day = new Date(today);
-    day.setDate(today.getDate() - i);
-    const key = day.toISOString().slice(0, 10);
+    const day = new Date(todayAnchor);
+    day.setDate(todayAnchor.getDate() - i);
+    const key = keyFromLocalDate(day);
     days.push({
       key,
       record: records[key]

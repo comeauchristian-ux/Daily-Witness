@@ -7,7 +7,8 @@ import { GROUPS } from './data';
 import { createBlankDay, getTodayKey, loadRecords, saveRecords, todayDisplayLabel } from './storage';
 
 export default function App() {
-  const todayKey = getTodayKey();
+  const [now, setNow] = useState(() => new Date());
+  const todayKey = getTodayKey(now);
   const [records, setRecords] = useState(() => loadRecords());
   const [selectedQuadrant, setSelectedQuadrant] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
@@ -18,6 +19,13 @@ export default function App() {
   useEffect(() => {
     saveRecords(records);
   }, [records]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
   const selectedGroup = useMemo(
     () => GROUPS.find((group) => group.id === selectedQuadrant) || null,
@@ -78,7 +86,7 @@ export default function App() {
       {!selectedGroup ? (
         <CircleView
           dayState={dayState}
-          dateLabel={todayDisplayLabel()}
+          dateLabel={todayDisplayLabel(now)}
           onSelectQuadrant={setSelectedQuadrant}
           onHistory={() => setShowHistory(true)}
         />
